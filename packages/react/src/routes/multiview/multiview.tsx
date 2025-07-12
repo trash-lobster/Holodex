@@ -88,27 +88,29 @@ export function Multiview() {
         <title>Multiview - Holodex</title>
       </Helmet>
       <div id="multiview" ref={multiviewRef}>
-        <div className="relative flex h-full w-full flex-col">
-          <ToolBar icons={isMobile ? mobileIcons : icons} />
-          <ToolButton
-            className={cn(
-              "right-2 top-0 z-20 rounded-none bg-base-2 p-1 transition-all md:px-5",
-              "absolute",
-              isBarActive ? "hidden" : "visible",
-            )}
-            icon={{
-              path: mdiChevronDown,
-              tooltip: "Open Panel",
-              onClick: openPanel,
-            }}
+        <div>
+          <div className="relative flex h-full w-full flex-col">
+            <ToolBar icons={isMobile ? mobileIcons : icons} />
+            <ToolButton
+              className={cn(
+                "right-2 top-0 z-20 rounded-none bg-base-2 p-1 transition-all md:px-5",
+                "absolute",
+                isBarActive ? "hidden" : "visible",
+              )}
+              icon={{
+                path: mdiChevronDown,
+                tooltip: "Open Panel",
+                onClick: openPanel,
+              }}
+            />
+          </div>
+          <MultiViewBackground
+            columnWidth={120}
+            rowHeight={90}
+            showTips={true}
+            collapseToolbar={!isBarActive}
           />
         </div>
-        <MultiViewBackground
-          columnWidth={120}
-          rowHeight={90}
-          showTips={true}
-          collapseToolbar={!isBarActive}
-        />
       </div>
     </>
   );
