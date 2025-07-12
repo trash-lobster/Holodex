@@ -21,12 +21,13 @@ import { useLive } from "@/services/live.service";
 import { useRef, useState } from "react";
 import { useVideoFilter } from "@/hooks/useVideoFilter";
 import { useVideoSort } from "@/hooks/useVideoSort";
+import { MultiViewIcon } from "./ToolButton";
 
 type VideoWithExtra = VideoBase & {
   platform: string;
 };
 
-export function ToolBar() {
+export function ToolBar({ icons }: { icons: MultiViewIcon[] }) {
   //   const { t } = useTranslation();
   const [open] = useAtom(isSidebarOpenAtom);
   const [isFullScreen] = useAtom(sidebarShouldBeFullscreenAtom);
@@ -117,7 +118,7 @@ export function ToolBar() {
           </div>
         </>
       )}
-      <ToolButtonContainer />
+      <ToolButtonContainer icons={icons} />
     </div>
   );
 }
