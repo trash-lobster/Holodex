@@ -9,9 +9,14 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/shadcn/ui/avatar";
 import { cn, makeThumbnailUrl } from "@/lib/utils";
 import { MemoizedLiveChannelTooltipContentCard } from "./LiveChannelTooltipContentCard";
 import { compareTimeDiffToNow } from "@/lib/time";
+import Icon from "@mdi/react";
+import { mdiTwitch } from "@mdi/js";
+import { Badge } from "@/shadcn/ui/badge";
 
 interface LiveChannelProps {
-  video: VideoBase;
+  video: VideoBase & {
+    platform: string;
+  };
 }
 
 export function LiveChannel({ video }: LiveChannelProps) {
@@ -35,18 +40,25 @@ export function LiveChannel({ video }: LiveChannelProps) {
               />
               <AvatarFallback>CN</AvatarFallback>
             </Avatar>
-            <div
+            <Badge
               className={cn(
-                "absolute bottom-0 right-0 rounded-sm px-0.5 text-xs text-white",
+                "absolute bottom-0 right-0 h-4 rounded-sm p-0.5 text-xs text-white",
                 video.status === "live" ? "bg-red" : "bg-slate-10",
               )}
             >
-              {/* if live stream has started, check how long it has been running */}
-              {/* if it is less than 1 hour, use the minutes, otherwise, round down to the hour */}
               {video.status === "live"
                 ? compareTimeDiffToNow(video.start_actual)
                 : compareTimeDiffToNow(video.start_scheduled)}
-            </div>
+            </Badge>
+            {video.platform === "twitch" && (
+              <Badge
+                className={cn(
+                  "absolute bottom-0 left-0 h-4 rounded-sm bg-purple p-0.5 text-xs text-white",
+                )}
+              >
+                <Icon path={mdiTwitch} size={0.6} />
+              </Badge>
+            )}
           </div>
         </TooltipTrigger>
         <TooltipContent

@@ -24,6 +24,10 @@ import { useRef, useState } from "react";
 import { useVideoFilter } from "@/hooks/useVideoFilter";
 import { useVideoSort } from "@/hooks/useVideoSort";
 
+type VideoWithExtra = VideoBase & {
+  platform: string;
+};
+
 export function ToolBar() {
   //   const { t } = useTranslation();
   const [open] = useAtom(isSidebarOpenAtom);
@@ -37,12 +41,11 @@ export function ToolBar() {
   };
   // based on what the selection is -> use different methods to render title card?
   const [currentOrg, setCurrentOrg] = useState(Favorites);
-  const [liveChannels, setLiveChannels] = useState<Live[]>([]);
   const { data: live } = useLive({
     org: currentOrg.name,
-    type: ["placeholder", "stream"],
-    include: ["mentions"],
+    type: ["stream"],
   });
+
   const liveChannelContainerRef = useRef<HTMLDivElement>(null);
 
   const liveFiltered = useVideoFilter(
@@ -53,6 +56,12 @@ export function ToolBar() {
 
   // sort livestreams by video list settings
   const nowLiveSorted = useVideoSort(liveFiltered, "stream_schedule");
+  const nowLiveSortedWithPlatform: VideoWithExtra[] = nowLiveSorted.map(
+    (video) => ({
+      ...video,
+      platform: (video as VideoWithExtra).platform ?? "",
+    }),
+  );
 
   const onSelect = (org: Org) => {
     if (org.name === currentOrg.name) return;
@@ -102,7 +111,7 @@ export function ToolBar() {
           onWheel={handleWheel}
           className={cn("flex min-h-12 w-full gap-2 overflow-x-scroll", {})}
         >
-          {nowLiveSorted.map((live) => {
+          {nowLiveSortedWithPlatform.map((live) => {
             return <LiveChannel key={live.id} video={live} />;
           })}
         </div>
