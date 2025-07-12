@@ -10,8 +10,8 @@ import {
   mdiTuneVertical,
   mdiViewGridPlusOutline,
 } from "@mdi/js";
-import { closeMultiViewPanelAtom } from "@/hooks/useFrame";
-import { useSetAtom } from "jotai";
+import { closeMultiViewPanelAtom, isMobileAtom } from "@/hooks/useFrame";
+import { useAtomValue, useSetAtom } from "jotai";
 import { MultiViewIcon, ToolButton } from "./ToolButton";
 
 const reorderIcon =
@@ -19,58 +19,35 @@ const reorderIcon =
 
 export function ToolButtonContainer() {
   const closePanel = useSetAtom(closeMultiViewPanelAtom);
+  const isMobile = useAtomValue(isMobileAtom);
+
+  const baseIcons: MultiViewIcon[] = [
+    { path: mdiCardPlusOutline, tooltip: "Open Dialog" },
+    { path: mdiGridLarge, tooltip: "Change Layout" },
+    { path: mdiViewGridPlusOutline, tooltip: "Add Cell" },
+    { path: mdiTuneVertical, tooltip: "Media Control" },
+    { path: reorderIcon, tooltip: "Reorder Layout" },
+  ];
 
   const icons: MultiViewIcon[] = [
-    {
-      path: mdiCardPlusOutline,
-      tooltip: "Open Dialog",
-    },
-    {
-      path: mdiGridLarge,
-      tooltip: "Change Layout",
-    },
-    {
-      path: mdiViewGridPlusOutline,
-      tooltip: "Add Cell",
-    },
-    {
-      path: mdiTuneVertical,
-      tooltip: "Media Control",
-    },
-    {
-      path: reorderIcon,
-      tooltip: "Reorder Layout",
-    },
-    {
-      path: mdiSync,
-      tooltip: "Archive Sync",
-    },
-    {
-      path: mdiContentSaveOutline,
-      tooltip: "Save Layout",
-    },
-    {
-      path: mdiDeleteOutline,
-      tooltip: "Clear",
-    },
-    {
-      path: mdiFullscreen,
-      tooltip: "Fullscreen",
-    },
-    {
-      path: mdiLinkVariant,
-      tooltip: "Share Layout",
-    },
-    {
-      path: mdiChevronUp,
-      tooltip: "Collapse Panel",
-      onClick: closePanel,
-    },
+    ...baseIcons,
+    { path: mdiSync, tooltip: "Archive Sync" },
+    { path: mdiContentSaveOutline, tooltip: "Save Layout" },
+    { path: mdiDeleteOutline, tooltip: "Clear" },
+    { path: mdiFullscreen, tooltip: "Fullscreen" },
+    { path: mdiLinkVariant, tooltip: "Share Layout" },
+    { path: mdiChevronUp, tooltip: "Collapse Panel", onClick: closePanel },
+  ];
+
+  const mobileIcons: MultiViewIcon[] = [
+    ...baseIcons,
+    { path: mdiLinkVariant, tooltip: "Share Layout" },
+    { path: mdiChevronUp, tooltip: "Collapse Panel", onClick: closePanel },
   ];
 
   return (
     <div className="flex flex-row items-center justify-center gap-1 rounded-lg ">
-      {icons.map((icon, index) => (
+      {(isMobile ? mobileIcons : icons).map((icon, index) => (
         <ToolButton key={index} icon={icon} index={`${icon.tooltip}-button`} />
       ))}
     </div>
