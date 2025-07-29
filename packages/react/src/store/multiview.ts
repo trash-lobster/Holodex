@@ -8,11 +8,11 @@ import {
   VideoCell,
 } from "@/types/multiview";
 import { atom, useAtom, useSetAtom } from "jotai";
-import { RefObject, useEffect } from "react";
+import { useEffect } from "react";
 
 export const isMultiViewFullscreenAtom = atom(!!document.fullscreenElement);
 
-export function useMultiViewFullScreen(ref: RefObject<HTMLDivElement | null>) {
+export function useMultiViewFullScreen() {
   const [isFullScreen, setIsFullScreen] = useAtom(isMultiViewFullscreenAtom);
   const indicatePageFullscreen = useSetAtom(indicatePageFullscreenAtom);
 
@@ -30,11 +30,12 @@ export function useMultiViewFullScreen(ref: RefObject<HTMLDivElement | null>) {
   }, [setIsFullScreen, indicatePageFullscreen]);
 
   const toggleFullScreen = () => {
-    if (ref && ref.current) {
+    const multiviewElement = document.getElementById("multiview");
+    if (multiviewElement) {
       if (document.fullscreenElement) {
         document.exitFullscreen();
       } else {
-        ref.current.requestFullscreen(); // Use ref.current directly
+        multiviewElement.requestFullscreen();
       }
     }
   };
@@ -173,6 +174,8 @@ export const updateCellPositionAtom = atom(
       ...targetCell,
       ...updates,
     };
+
+    console.log(newCells);
 
     set(multiviewCellsAtom, {
       cells: newCells,

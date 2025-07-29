@@ -41,7 +41,7 @@ export function Multiview() {
   const clearCells = useSetAtom(clearMultiviewCellsAtom);
 
   const { isFullScreen: isFullscreen, toggleFullScreen } =
-    useMultiViewFullScreen(multiviewRef);
+    useMultiViewFullScreen();
 
   const baseIcons: MultiViewIcon[] = [
     { path: "i-heroicons:plus-circle", tooltip: "Select Live" },
