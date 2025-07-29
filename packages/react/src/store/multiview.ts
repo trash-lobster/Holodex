@@ -53,11 +53,6 @@ export const isAutoLayoutAtom = atom(false);
 
 export const readMultiviewCellsAtom = atom((get) => get(multiviewCellsAtom));
 
-const addMultiviewCellAtom = atom(null, (get, set, cell: Cell) => {
-  const curr = get(readMultiviewCellsAtom);
-  set(multiviewCellsAtom, { cells: [...curr.cells, cell] });
-});
-
 export const removeMultiviewCellAtom = atom(
   null,
   (get, set, cellId: string) => {
@@ -76,18 +71,59 @@ export const setCellsAtom = atom(null, (_, set, cells: Cell[]) => {
   set(multiviewCellsAtom, { cells: cells });
 });
 
-export const registerVideoCellAtom = atom(null, (_, set, video: VideoBase) => {
-  const newVideoCell: VideoCell = {
-    i: `video_${video.id}`,
-    type: "video",
-    video: video,
-    x: 0,
-    y: 0,
-    w: 1,
-    h: 1,
-  };
-  set(addMultiviewCellAtom, newVideoCell);
-});
+export const registerVideoCellAtom = atom(
+  null,
+  (get, set, video: VideoBase) => {
+    const curr = get(readMultiviewCellsAtom);
+    curr.cells.sort((a, b) => {
+      if (a.y === b.y) {
+        return a.x - b.x;
+      }
+      return a.y - b.y;
+    });
+    curr.cells.push({
+      i: `video_${video.id}`,
+      type: "video",
+      video: video,
+      x: 0,
+      y: 0,
+      w: 1,
+      h: 1,
+    });
+
+    set(setCellsAtom, calculateLayout(curr.cells));
+  },
+);
+
+export function calculateLayout(cells: Cell[]) {
+  const numberOfCells = cells.length;
+  const rows = Math.floor(Math.sqrt(numberOfCells));
+  const cols = Math.ceil(numberOfCells / rows);
+
+  // Calculate grid units (each cell should span equal portions of the 24x24 grid)
+  const cellWidth = Math.floor(24 / cols);
+  const cellHeight = Math.floor(24 / rows);
+
+  const arrangedCells: Cell[] = [];
+
+  for (let i = 0; i < numberOfCells; i++) {
+    const col = i % cols;
+    const row = Math.floor(i / cols);
+
+    const newPosition = {
+      x: col * cellWidth,
+      y: row * cellHeight,
+      w: cellWidth,
+      h: cellHeight,
+    };
+
+    arrangedCells.push({
+      ...cells[i],
+      ...newPosition,
+    });
+  }
+  return arrangedCells;
+}
 
 export const removeVideoCellAtom = atom(null, (_, set, videoId: string) => {
   set(removeMultiviewCellAtom, `video_${videoId}`);
@@ -174,8 +210,6 @@ export const updateCellPositionAtom = atom(
       ...targetCell,
       ...updates,
     };
-
-    console.log(newCells);
 
     set(multiviewCellsAtom, {
       cells: newCells,

@@ -8,7 +8,6 @@ import { useAtomValue, useSetAtom } from "jotai";
 import GridLayout from "react-grid-layout";
 import { VideoCell } from "./video/VideoCell";
 import { Cell } from "@/types/multiview";
-import { useMemo } from "react";
 import { onResize } from "./gridFunctions/resize";
 import { onDragStop } from "./gridFunctions/drag";
 
@@ -37,28 +36,10 @@ export function Layout({ isFullScreen = false }: LayoutProps) {
   const setIsAutoLayout = useSetAtom(isAutoLayoutAtom);
   const turnOffAutoLayout = () => setIsAutoLayout(true);
 
-  // Pure calculation of layout - no side effects
-  const arrangedCell = useMemo(() => {
-    return isAutoLayout ? cells : calculateLayout(cells, updateCell);
-  }, [cells, isAutoLayout]);
-
-  const renderedCells = useMemo(
-    () =>
-      arrangedCell.map((cell) => (
-        <div
-          key={cell.i}
-          className="h-full w-full flex flex-col border-2 border-blue-6 rounded-lg box-border bg-slate-5"
-        >
-          {renderCellContent(cell)}
-        </div>
-      )),
-    [arrangedCell],
-  );
-
   return (
     <GridLayout
       className="layout"
-      layout={arrangedCell}
+      layout={cells}
       cols={24}
       rowHeight={Math.max(cellDimensions.rowHeight - 26.0 / 24.0, 1)}
       width={dimensions.width}
@@ -80,53 +61,14 @@ export function Layout({ isFullScreen = false }: LayoutProps) {
         newItem: GridLayout.Layout,
       ) => onResize(layout, oldItem, newItem, updateCell, turnOffAutoLayout, 2)}
     >
-      {renderedCells}
+      {cells.map((cell) => (
+        <div
+          key={cell.i}
+          className="h-full w-full flex flex-col border-2 border-blue-6 rounded-lg box-border bg-slate-5"
+        >
+          {renderCellContent(cell)}
+        </div>
+      ))}
     </GridLayout>
   );
-}
-
-function calculateLayout(
-  cells: Cell[],
-  updateCell: (id: string, updates: Partial<Cell>) => void,
-) {
-  const numberOfCells = cells.length;
-  const rows = Math.floor(Math.sqrt(numberOfCells));
-  const cols = Math.ceil(numberOfCells / rows);
-
-  // Calculate grid units (each cell should span equal portions of the 24x24 grid)
-  const cellWidth = Math.floor(24 / cols);
-  const cellHeight = Math.floor(24 / rows);
-
-  const arrangedCells: Cell[] = [];
-
-  if (arrangedCells)
-    for (let i = 0; i < numberOfCells; i++) {
-      const col = i % cols;
-      const row = Math.floor(i / cols);
-
-      const newPosition = {
-        x: col * cellWidth,
-        y: row * cellHeight,
-        w: cellWidth,
-        h: cellHeight,
-      };
-
-      arrangedCells.push({
-        ...cells[i],
-        ...newPosition,
-      });
-
-      const currentCell = cells[i];
-      const hasChanges =
-        currentCell.x !== newPosition.x ||
-        currentCell.y !== newPosition.y ||
-        currentCell.w !== newPosition.w ||
-        currentCell.h !== newPosition.h;
-
-      if (hasChanges) {
-        updateCell(cells[i].i, newPosition);
-      }
-    }
-
-  return arrangedCells;
 }
