@@ -7,15 +7,17 @@ import { VideoCellControl } from "./VideoCellControl";
 
 interface VideoCellProps {
   id: string;
+  uuid: string;
 }
 
-export function VideoCell({ id }: VideoCellProps) {
+export function VideoCell({ id, uuid }: VideoCellProps) {
   const videoStatusAtom = videoStatusAtomFamily(id || "x");
   const statusValue = useAtomValue(videoStatusAtom);
 
   return (
     <>
       <div
+        key={`${id}-${uuid}`}
         className={cn(
           "video-cell-video flex-1 min-h-0 min-w-0 w-auto aspect-video",
           statusValue.status === "playing" ? "p-0" : "px-3 pt-3 pb-0",

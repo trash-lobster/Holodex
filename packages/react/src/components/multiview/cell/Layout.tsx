@@ -18,7 +18,7 @@ interface LayoutProps {
 const renderCellContent = (cell: Cell) => {
   switch (cell.type) {
     case "video":
-      return <VideoCell id={cell.video.id} />;
+      return <VideoCell id={cell.video.id} uuid={cell.uuid} />;
     case "chat":
       return <p>Chat cell not implemented yet</p>;
     case "placeholder":

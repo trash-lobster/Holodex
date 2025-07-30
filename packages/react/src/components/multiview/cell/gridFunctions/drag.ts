@@ -112,7 +112,7 @@ export function calculateEmptyCells(
   occupiedCells: Layout[],
   gridWidth: number,
   gridHeight: number,
-): Cell[] {
+): Pick<Cell, "i" | "type" | "x" | "y" | "w" | "h">[] {
   const occupancyGrid: boolean[][] = Array(gridHeight)
     .fill(null)
     .map(() => Array(gridWidth).fill(false));
@@ -128,7 +128,7 @@ export function calculateEmptyCells(
   });
 
   // Find empty rectangular regions
-  const emptyCells: Cell[] = [];
+  const emptyCells: Pick<Cell, "i" | "type" | "x" | "y" | "w" | "h">[] = [];
   const processedGrid: boolean[][] = Array(gridHeight)
     .fill(null)
     .map(() => Array(gridWidth).fill(false));

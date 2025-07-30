@@ -9,6 +9,7 @@ import {
 } from "@/types/multiview";
 import { atom, useAtom, useSetAtom } from "jotai";
 import { useEffect } from "react";
+import { nanoid } from "nanoid";
 
 export const isMultiViewFullscreenAtom = atom(!!document.fullscreenElement);
 
@@ -48,9 +49,10 @@ export function useMultiViewFullScreen() {
 
 // TODO: read from memory
 export const multiviewCellsAtom = atom<MultiviewCells>({ cells: [] });
-
+multiviewCellsAtom.debugLabel = "multiviewCellsAtom";
 export const isAutoLayoutAtom = atom(false);
 
+// updating the cell order here means that we will see a re-render of the cells whenever it is moved
 export const readMultiviewCellsAtom = atom((get) => get(multiviewCellsAtom));
 
 export const removeMultiviewCellAtom = atom(
@@ -58,7 +60,7 @@ export const removeMultiviewCellAtom = atom(
   (get, set, cellId: string) => {
     const curr = get(readMultiviewCellsAtom);
     set(multiviewCellsAtom, {
-      cells: curr.cells.filter((cell) => cell.i !== cellId),
+      cells: calculateLayout(curr.cells.filter((cell) => cell.i !== cellId)),
     });
   },
 );
@@ -71,30 +73,54 @@ export const setCellsAtom = atom(null, (_, set, cells: Cell[]) => {
   set(multiviewCellsAtom, { cells: cells });
 });
 
+/**
+ * Registers a new video cell in the multiview layout.
+ * New cell is assigned a unique ID
+ * This also take into account of any reordering that has been done to the cells and write to state
+ * This is so that when recalculating the default layout, we respect the reordering
+ * Due to an issue with React-Player not firing off events after the video cells have been moved and new cells are added,
+ * we have to re-render all the cells that are inbetween the cells that were moved.
+ * The way we have landed on doing that is by reassiging a new UUID to those affected cells
+ * So that the video components will re-render due to a key change (UUID is part of the component key)
+ */
 export const registerVideoCellAtom = atom(
   null,
   (get, set, video: VideoBase) => {
     const curr = get(readMultiviewCellsAtom);
-    curr.cells.sort((a, b) => {
+    const copy = [...curr.cells];
+    copy.sort((a, b) => {
       if (a.y === b.y) {
         return a.x - b.x;
       }
       return a.y - b.y;
     });
-    curr.cells.push({
+
+    let shouldUpdate = false;
+    curr.cells.forEach((cell, i) => {
+      if (cell.i !== copy[i].i) {
+        shouldUpdate = !shouldUpdate;
+        copy[i].uuid = nanoid(8);
+      } else if (shouldUpdate) {
+        copy[i].uuid = nanoid(8);
+      }
+    });
+
+    copy.push({
       i: `video_${video.id}`,
       type: "video",
       video: video,
       x: 0,
       y: 0,
+      uuid: nanoid(8),
       w: 1,
       h: 1,
     });
 
-    set(setCellsAtom, calculateLayout(curr.cells));
+    set(setCellsAtom, calculateLayout(copy));
   },
 );
 
+// recalculate the default layout of the cells
 export function calculateLayout(cells: Cell[]) {
   const numberOfCells = cells.length;
   const rows = Math.floor(Math.sqrt(numberOfCells));
@@ -257,6 +283,7 @@ export const mutateVideoToPlaceholderAtom = atom(
     const id = cleanMultiviewCellId(videoId);
     const newPlaceholderCell: PlaceholderCell = {
       i: `placeholder_${id}`,
+      uuid: nanoid(8),
       type: "placeholder",
       x: 0,
       y: 0,

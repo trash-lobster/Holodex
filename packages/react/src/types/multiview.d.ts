@@ -4,6 +4,7 @@ type CellType = "video" | "chat" | "placeholder";
 type ChatCellStatus = "active" | "inactive";
 
 interface BaseCell extends GridLayout.Layout {
+  uuid: string;
   type: CellType;
 }
 
